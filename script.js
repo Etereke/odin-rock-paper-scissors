@@ -15,47 +15,111 @@ function computerPlay(){
     return hand;
 }
 
-function singleRound(playerSelection, computerSelection){
-    playerSelection = playerSelection.toLowerCase();
-    let answer = "";
+function getResultOfRound(playerSelection, computerSelection){
+    let result = "";
     switch(playerSelection){
         case "rock":
             if(computerSelection === "rock"){
-                answer = "Tie!";
+                result = "tie";
             }
             else if(computerSelection === "paper"){
-                answer = "You lose!";
+                result = "loss";
             }
             else if(computerSelection === "scissors"){
-                answer = "You win!";
+                result = "win";
             }
             break;
         case "paper":
             if(computerSelection === "paper"){
-                answer = "Tie!";
+                result = "tie";
             }
             else if(computerSelection === "scissors"){
-                answer = "You lose!";
+                result = "loss";
             }
             else if(computerSelection === "rock"){
-                answer = "You win!";
+                result = "win";
             }
             break;
         case "scissors":
             if(computerSelection === "scissors"){
-                answer = "Tie!";
+                result = "tie";
             }
             else if(computerSelection === "rock"){
-                answer = "You lose!";
+                result = "loss";
             }
             else if(computerSelection === "paper"){
-                answer = "You win!";
+                result = "win";
             }
             break;
         default:
-            answer = "Someone sent an invalid answer!"
+            result = "invalid";
     }
-    return answer;
+    return result;
+}
+function getResultsString(result){
+    let resultString = "";
+    switch(result){
+        case "tie":
+            resultString = "It's a tie!";
+            break;
+        case "win":
+            resultString = "You win this round!";
+            break;
+        case "loss":
+            resultString = "The computer wins this round";
+            break;
+    }
+    return resultString;
+}
+
+function gameOver(whoWins){
+    if(whoWins === "player"){
+        winner.textContent = "Congratulations! You win!";
+    }
+    else{
+        winner.textContent = "Shoot! The computer won this one!";
+    }
+    buttons.forEach(button => {
+        button.disabled = true;
+    });
+    resetButton.hidden = false;
+}
+
+function updateScore(result){
+    switch(result){
+        case "win":
+            playerScore++;
+            break;
+        case "loss":
+            computerScore++;
+            break;
+    }
+    score.textContent = `Your score: ${playerScore} Computer score: ${computerScore}`;
+    if(playerScore === 5){
+        gameOver("player");
+    }
+    else if(computerScore === 5){
+        gameOver("computer");
+    }
+}
+
+function playSingleRound(playerSelection, computerSelection){
+    results.innerHTML = "";
+    let yourMove = document.createElement('div');
+    let computerMove = document.createElement('div');
+    let resultOfRound = document.createElement('div');
+
+    yourMove.textContent = `You played: ${playerSelection}`;
+    computerMove.textContent = `The computer played: ${computerSelection}`;
+    let result = getResultOfRound(playerSelection, computerSelection);
+    resultOfRound.textContent = getResultsString(result);
+
+    results.appendChild(yourMove);
+    results.appendChild(computerMove);
+    results.appendChild(resultOfRound);
+
+    updateScore(result);
+
 }
 
 function declareWinner(playerScore, computerScore){
@@ -78,34 +142,30 @@ function getCorrectInput(){
     return playerChoice;
 }
 
-function game(){
 
-    let playerScore = 0;
-    let computerScore = 0;
 
-    for(let i = 0; i < 5; i++){
+let playerScore = 0;
+let computerScore = 0;
+const buttons = document.querySelectorAll('.choice');
+let results = document.querySelector('.result');
+let score = document.querySelector(".score");
+let winner = document.querySelector(".winner");
+let resetButton = document.querySelector('.reset');
 
-        let playerChoice = getCorrectInput();
-        let computerChoice = computerPlay();
-        let result = singleRound(playerChoice, computerChoice);
-        
-        if(result.includes("win")){
-            playerScore++;
-        }
-        else if(result.includes("lose")){
-            computerScore++;
-        }
-        else{
-            playerScore += 0.5;
-            computerScore += 0.5;
-        }
-        console.log(`You chose: ${playerChoice}
-                    The computer chose: ${computerChoice}
-                    ${result}
-                    Current Score: ${playerScore} - ${computerScore}`);
-    }
-    
-    declareWinner(playerScore, computerScore);
-}
+resetButton.addEventListener('click', () => {
+    playerScore = 0;
+    computerScore = 0;
+    resetButton.hidden = true;
+    results.textContent = '';
+    score.textContent = '';
+    winner.textContent = '';
+    buttons.forEach(button => {
+        button.disabled = false;
+    });
+});
 
-game();
+buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+        playSingleRound(button.id, computerPlay());
+    });
+});
